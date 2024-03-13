@@ -4,12 +4,11 @@ namespace App\Filament\Widgets;
 
 use App\Filament\Resources\OrderResource;
 use App\Models\Order;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Support\Str;
-
+use Filament\Forms\Components\Group;
 use function Filament\Support\format_money;
 
 class LatestOrders extends BaseWidget
@@ -58,9 +57,11 @@ class LatestOrders extends BaseWidget
 
             ])
             ->actions([
-                // Action::make('View Order')
-                //     ->url(fn (Order $record): string => OrderResource::getUrl('view', ['record'=>$record]))
-                //     ->icon('heroicon-m-eye')
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make()
+                ])
             ]);
     }
 }
