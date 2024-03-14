@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
 use App\Models\Order;
+use App\Models\Rute;
 use App\Models\Tiket;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Hidden;
@@ -22,6 +23,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Forms\Set;
 use Filament\Tables\Columns\SelectColumn;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use function Filament\Support\format_money;
 
@@ -30,6 +32,17 @@ class OrderResource extends Resource
     protected static ?string $model = Order::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        if(auth()->user()->can('order'))
+            return true;
+        else
+            return false;
+    }
+
+
 
     public static function form(Form $form): Form
     {
@@ -44,18 +57,12 @@ class OrderResource extends Resource
                                 ->searchable()
                                 ->preload()
                                 ->relationship('user', 'name'),
-                            Select::make('payment_status')
-                                ->options([
-                                    'pending' => 'Pending',
-                                    'paid' => 'Dibayar',
-                                    'unpaid' => 'Belum Dibayar',
-                                ]),
                             ToggleButtons::make('status')
                                 ->inline()
                                 ->default('unpaid')
                                 ->required()
                                 ->options([
-                                    'pending' => 'Pending',
+                                    'pending' => 'Bayar Di Loket',
                                     'paid' => 'Dibayar',
                                     'unpaid' => 'Belum Dibayar',
                                 ])->colors([
@@ -66,34 +73,33 @@ class OrderResource extends Resource
                             MarkdownEditor::make('notes')
                                 ->fileAttachmentsDirectory('order')
                                 ->columnSpanFull(),
+
                         ])->columns(2),
 
                         Section::make('Pemesana')->schema([
                             Repeater::make('items')
                                 ->relationship()
                                 ->schema([
-                                    Select::make('tiket_id')
-                                        ->relationship('tiket', 'name')
+                                    Select::make('rute_id')
+                                        ->relationship('rute', 'tujuan')
                                         ->required()
                                         ->searchable()
                                         ->preload()
                                         ->distinct()
                                         ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                         ->reactive()
-                                        ->afterStateUpdated(fn ($state, Set $set) => $set('harga_satuan', Tiket::find($state)?->price ?? 0))
-                                        ->afterStateUpdated(fn ($state, Set $set) => $set('harga_total', Tiket::find($state)?->price ?? 0))
+                                        ->afterStateUpdated(fn ($state, Set $set) => $set('harga', Rute::find($state)?->harga ?? 0))
+                                        ->afterStateUpdated(fn ($state, Set $set) => $set('harga_total', Rute::find($state)?->harga ?? 0))
                                         ->columnSpan(4),
-
                                     TextInput::make('jumlah_tiket')
                                         ->numeric()
                                         ->required()
                                         ->default(1)
                                         ->minValue(1)
                                         ->reactive()
-                                        ->afterStateUpdated(fn ($state, Set $set, Get $get) => $set('harga_total', $state * $get('harga_satuan')))
+                                        ->afterStateUpdated(fn ($state, Set $set, Get $get) => $set('harga_total', $state * $get('harga')))
                                         ->columnSpan(2),
-
-                                    TextInput::make('harga_satuan')
+                                    TextInput::make('harga')
                                         ->numeric()
                                         ->required()
                                         ->disabled()
@@ -108,7 +114,7 @@ class OrderResource extends Resource
                                         ->columnSpan(3)
                                 ])->columns(12),
 
-                            Placeholder::make('grand_total_placeholder')
+                            Placeholder::make('total_placeholder')
                                 ->label('Total Harga semua')
                                 ->content(function (Get $get, Set $set) {
                                     $total = 0;
@@ -119,10 +125,10 @@ class OrderResource extends Resource
                                     foreach ($repeaters as $key => $repeater) {
                                         $total += $get("items.{$key}.harga_total");
                                     }
-                                    $set('grand_total', $total);
+                                    $set('harga_total', $total);
                                     return 'Rp ' . number_format($total, 2);
                                 }),
-                                Hidden::make('grand_total')
+                                Hidden::make('harga_total')
                                     ->default(0)
                         ]),
                     ]),
@@ -140,18 +146,18 @@ class OrderResource extends Resource
                     ->numeric()
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('grand_total')
+                TextColumn::make('items.harga_total')
                     ->formatStateUsing(function ($state) {
                         return Str::replace('IDR', 'Rp', format_money($state, 'IDR'));})
                     ->sortable(),
-                TextColumn::make('payment_status')
-                    ->searchable(),
+                // TextColumn::make('payment_status')
+                //     ->searchable(),
                 SelectColumn::make('status')
-                ->options([
-                    'pending'   => 'Pending',
-                    'paid'      => 'Dibayar',
-                    'unpaid'    => 'Belum Dibayar',
-                ]),
+                    ->options([
+                        'pending'   => 'Pending',
+                        'paid'      => 'Dibayar',
+                        'unpaid'    => 'Belum Dibayar',
+                    ]),
 
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -189,7 +195,7 @@ class OrderResource extends Resource
     {
         return static::getModel()::count();
     }
-    
+
     public static function getNavigationBadgeColor():string|array|null
     {
         return static::getModel()::count()>10?'danger':'success';
@@ -201,6 +207,7 @@ class OrderResource extends Resource
             'index' => Pages\ListOrders::route('/'),
             'create' => Pages\CreateOrder::route('/create'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
+            'view' => Pages\ViewOrder::route('/{record}/view'),
         ];
     }
 }

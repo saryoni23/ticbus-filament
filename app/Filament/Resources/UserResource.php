@@ -5,8 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers\OrdersRelationManager;
 use App\Models\User;
-use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
@@ -15,6 +15,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+
 
 
 class UserResource extends Resource
@@ -46,6 +48,13 @@ class UserResource extends Resource
                     ->dehydrated(fn ($state) => filled($state))
                     ->maxLength(255)
                     ->required(fn (Page $livewire): bool => $livewire instanceof CreateRecord),
+                Select::make('roles')
+                    ->multiple()
+                    ->searchable()
+                    ->preload()
+                    ->relationship('roles','name')
+                    ->hidden(fn(): bool => ! auth()->user()->can('role-permission'))
+
             ]);
     }
 
@@ -60,6 +69,10 @@ class UserResource extends Resource
                 TextColumn::make('email_verified_at')
                     ->dateTime()
                     ->sortable(),
+                TextColumn::make('roles.name')
+                    ->hidden(fn(): bool => ! auth()->user()->can('role-permission'))
+                    ->sortable(),
+                TextColumn::make('image'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -103,6 +116,15 @@ class UserResource extends Resource
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
+            'view' => Pages\ViewUser::route('/{record}/view'),
         ];
+    }
+    public static function getEloquentQuery(): Builder
+    {
+        $admins = User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
+        })->get()->pluck('id'); //[1, 3]
+
+        return parent::getEloquentQuery()->whereNotIn('id',$admins);
     }
 }

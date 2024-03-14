@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TiketResource\Pages;
+use App\Models\Rute;
 use App\Models\Tiket;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
@@ -21,6 +22,9 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Illuminate\Support\Str;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Columns\Layout\Split;
+use Filament\Tables\Columns\ImageColumn;
+
 
 use function Filament\Support\format_money;
 
@@ -32,6 +36,14 @@ class TiketResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        if(auth()->user()->can('tiket'))
+            return true;
+        else
+            return false;
+    }
+
 
     public static function form(Form $form): Form
 
@@ -40,7 +52,6 @@ class TiketResource extends Resource
             ->schema([
                 Group::make()->schema([
                     Section::make('Tiket Rute')->schema([
-                        Section::make([
                             TextInput::make('name')
                                 ->required()
                                 ->maxLength(255)
@@ -49,54 +60,35 @@ class TiketResource extends Resource
                                     if ($operation !== 'create') {
                                         return;
                                     }
-                                    $set('slug', Str::slug($state));
+                                    $set('kode', Str::slug($state));
                                 }),
-                            TextInput::make('slug')
+                            TextInput::make('kode')
                                 ->maxLength(255)
                                 ->readonly()
                                 ->required()
                                 ->dehydrated()
-                                ->unique(Tiket::class, 'slug', ignoreRecord: true),
-                            MarkdownEditor::make('description')
-                                ->fileAttachmentsDirectory('tiket')
+                                ->unique(Tiket::class, 'kode', ignoreRecord: true),
+                            Select::make('tipebus_id')
+                                ->required()
+                                ->searchable()
+                                ->preload()
+                                ->relationship('tipebus', 'name'),
+                            FileUpload::make('images')
+                                ->directory('tiket')
                                 ->columnSpanFull(),
-                        ])->columns(2),
-                        FileUpload::make('images')
-                            ->multiple()
-                            ->directory('tiket')
-                            ->maxFiles(5)
-                            ->reorderable(),
-                    ]),
+                    ])->columns(2),
                 ])->columnSpan(2),
 
                 Group::make()->schema([
-                    Section::make('Tiket Rute')->schema([
-                        Forms\Components\TextInput::make('price')
-                            ->label('Harga Satuan')
-                            ->numeric()
+                    Section::make()->schema([
+                        TextInput::make('jumlah_tiket')
                             ->required()
-                            ->prefix('Rp'),
-                    ]),
-                    Section::make('Jenis Bus')->schema([
-                        Select::make('orderItems_id')
-                            ->required()
-                            ->searchable()
-                            ->preload()
-                            ->relationship('categori', 'name')
-                    ]),
-                    Section::make('Rute')->schema([
-                        Select::make('rute_id')
-                            ->required()
-                            ->searchable()
-                            ->preload()
-                            ->relationship('rute', 'name')
-                    ]),
-                    Section::make('Status')->schema([
+                            ->numeric(),
                         Toggle::make('is_active')
                             ->required()
                             ->default('true')
                     ])
-                ])->columns(1)
+                ])->columnSpan(1)
 
             ])->columns(3);
     }
@@ -107,15 +99,12 @@ class TiketResource extends Resource
             ->columns([
                 TextColumn::make('name')
                     ->searchable(),
-                TextColumn::make('categori.name')
+                TextColumn::make('tipebus.name')
                     ->sortable(),
-                TextColumn::make('rute.name')
-                    ->sortable(),
-                TextColumn::make('price')
-                ->formatStateUsing(function ($state) {
-                    return Str::replace('IDR', 'Rp', format_money($state, 'IDR'));})
-                ->sortable(),
+                TextColumn::make('jumlah_tiket'),
                 ToggleColumn::make('is_active'),
+                ImageColumn::make('images')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -126,10 +115,10 @@ class TiketResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('categori')
-                ->relationship('categori','name'),
+                SelectFilter::make('tipebus')
+                ->relationship('tipebus','name'),
                 SelectFilter::make('rute')
-                ->relationship('rute','name')
+                ->relationship('rute','tujuan')
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
@@ -158,6 +147,8 @@ class TiketResource extends Resource
             'index' => Pages\ListTikets::route('/'),
             'create' => Pages\CreateTiket::route('/create'),
             'edit' => Pages\EditTiket::route('/{record}/edit'),
+            'view' => Pages\ViewTiket::route('/{record}/view'),
+
         ];
     }
 }

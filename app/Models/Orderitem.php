@@ -11,9 +11,9 @@ class Orderitem extends Model
 
     protected $fillable = [
         'order_id',
-        'tiket_id',
+        'rute_id',
         'jumlah_tiket',
-        'harga_satuan',
+        'harga',
         'harga_total',
     ];
 
@@ -22,9 +22,9 @@ class Orderitem extends Model
         return $this->belongsTo(Order::class);
     }
 
-    public function tiket()
+    public function rute()
     {
-        return $this->belongsTo(tiket::class);
+        return $this->belongsTo(Rute::class);
     }
 
 }

@@ -4,20 +4,26 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Models\FilamentModel;
+use Illuminate\Support\Str;
 
 class Tiket extends Model
 {
     use HasFactory;
+    protected static function booted()
+        {
+            static::creating(function ($model) {
+                $model->kode = Str::random(8); // Menggunakan fungsi Str::random() untuk membuat kode acak
+            });
+        } 
 
     protected $fillable = 
         [
-            'categori_id',
-            'rute_id',
             'name',
-            'slug',
+            'kode',
+            'jumlah_tiket',
             'images',
-            'description',
-            'price',
+            'tipebus_id',
             'is_active'
         ];
 
@@ -25,14 +31,18 @@ class Tiket extends Model
         'images' => 'array',
     ];
 
-    public function categori(){
-        return $this->belongsTo(Categori::class);
+
+    public function tipebus(){
+        return $this->belongsTo(Tipebus::class);
     }
     public function rute()
     {
         return $this->belongsTo(Rute::class);
     }
     public function orderItems(){
+        return $this->hasMany(OrderItem::class);
+    }
+    public function order(){
         return $this->hasMany(OrderItem::class);
     }
 }

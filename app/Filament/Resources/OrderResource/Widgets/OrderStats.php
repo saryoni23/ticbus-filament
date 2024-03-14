@@ -15,10 +15,10 @@ class OrderStats extends BaseWidget
             Stat::make('Pending', Order::query()->where('status', 'pending')->count()),
             Stat::make('Dibayar', Order::query()->where('status', 'paid')->count()),
             Stat::make('Belum Dibayar', Order::query()->where('status', 'unpaid')->count()),
-            Stat::make('Total', function () {
-                $total = Order::query()->sum('grand_total');
-                return 'Rp ' . number_format($total, 2);
-            })
+            // Stat::make('Total', function () {
+            //     $total = Order::query()->sum('items.harga_total');
+            //     return 'Rp ' . number_format($total, 2);
+            // })
         ];
     }
 }

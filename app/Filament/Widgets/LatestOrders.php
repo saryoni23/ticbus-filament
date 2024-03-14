@@ -10,9 +10,12 @@ use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Support\Str;
 use Filament\Forms\Components\Group;
 use function Filament\Support\format_money;
+use Filament\Tables\Actions\Action;
+
 
 class LatestOrders extends BaseWidget
 {
+
     protected int|string|array $columnSpan = 'full';
 
     protected static ?int $sort = 2;
@@ -30,7 +33,7 @@ class LatestOrders extends BaseWidget
 
                     ->searchable(),
 
-                TextColumn::make('grand_total')
+                TextColumn::make('items.harga_total')
                     ->formatStateUsing(function ($state) {
                         return Str::replace('IDR', 'Rp', format_money($state, 'IDR'));
                     })
@@ -46,10 +49,10 @@ class LatestOrders extends BaseWidget
                     ->sortable()
                     ->searchable(),
 
-                TextColumn::make('payment_status')
-                    ->sortable()
-                    ->badge()
-                    ->searchable(),
+                // TextColumn::make('payment_status')
+                //     ->sortable()
+                //     ->badge()
+                //     ->searchable(),
 
                 TextColumn::make('created_at')
                     ->label('Order Date')
@@ -57,11 +60,10 @@ class LatestOrders extends BaseWidget
 
             ])
             ->actions([
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make()
-                ])
+                Action::make('View Order')
+                ->url(fn(Order $record): string => OrderResource::getUrl('view', ['record' => $record]))
+                ->color('info')
+                ->icon('heroicon-o-eye'),
             ]);
     }
 }

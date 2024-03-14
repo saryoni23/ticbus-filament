@@ -1,3 +1,9 @@
+<div class="flex items-center justify-center h-screen bg-gray-300" id="register">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-1/2 mt-20 mb-16" >
+        <h1 class="text-2xl font-semibold mb-4">Registration</h1>
+
+
+        <!--
 <div class="w-full max-w-[85rem] py-10 px-4 sm:px-6 lg:px-8 mx-auto">
     <div class="flex h-full items-center">
       <main class="w-full max-w-md mx-auto p-6">
@@ -5,20 +11,39 @@
           <div class="p-4 sm:p-7">
             <div class="text-center">
               <h1 class="block text-2xl font-bold text-gray-800 dark:text-white">Sign up</h1>
-              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                Already have an account?
-                <a class="text-blue-600 decoration-2 hover:underline font-medium dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600" href="/login">
-                  Sign in here
-                </a>
-              </p>
+            </div> -->
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Already have an account?
+            <a class="text-blue-600 decoration-2 hover:underline font-medium dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                href="/login">
+                Sign in here
+            </a>
+            @if (session()->has('message'))
+        <div class="flex-col">
+            <div class='text-2xl'>
+                {{ session('message') }}
             </div>
-            <hr class="my-5 border-slate-300">
-            <!-- Form -->
-            <form>
-              <div class="grid gap-y-4">
-                <!-- Form Group -->
-  
-                <div>
+            <button type='button' wire:click="delSession"
+                class="mt-4 bg-gray-500 w-40 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                New Register
+            </button>
+        </div>
+
+        @else
+        <form method="post" wire:submit="save" >
+            {{ $this->form }}
+            <button type='submit'
+                class="mt-4 bg-green-500 w-40 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                Save
+            </button>
+        </form>
+        @endif
+        <!-- Form -->
+        <!-- <form>
+              <div class="grid gap-y-4"> -->
+        <!-- Form Group -->
+
+        <!-- <div>
                   <label for="name" class="block text-sm mb-2 dark:text-white">Name</label>
                   <div class="relative">
                     <input type="text" id="name" name="name" class="py-3 px-4 block w-full border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" required aria-describedby="email-error">
@@ -29,9 +54,9 @@
                     </div>
                   </div>
                   <p class="hidden text-xs text-red-600 mt-2" id="email-error">Please include a valid email address so we can get back to you</p>
-                </div>
-  
-                <div>
+                </div> -->
+
+        <!-- <div>
                   <label for="email" class="block text-sm mb-2 dark:text-white">Email address</label>
                   <div class="relative">
                     <input type="email" id="email" name="email" class="py-3 px-4 block w-full border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" required aria-describedby="email-error">
@@ -42,14 +67,14 @@
                     </div>
                   </div>
                   <p class="hidden text-xs text-red-600 mt-2" id="email-error">Please include a valid email address so we can get back to you</p>
-                </div>
-                <!-- End Form Group -->
-  
-                <!-- Form Group -->
-                <div>
+                </div> -->
+        <!-- End Form Group -->
+
+        <!-- Form Group -->
+        <!-- <div>
                   <div class="flex justify-between items-center">
                     <label for="password" class="block text-sm mb-2 dark:text-white">Password</label>
-  
+
                   </div>
                   <div class="relative">
                     <input type="password" id="password" name="password" class="py-3 border px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600" required aria-describedby="password-error">
@@ -60,15 +85,15 @@
                     </div>
                   </div>
                   <p class="hidden text-xs text-red-600 mt-2" id="password-error">8+ characters required</p>
-                </div>
-                <!-- End Form Group -->
-  
-  
-                <button type="submit" class="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600">Sign up</button>
+                </div> -->
+        <!-- End Form Group -->
+
+
+        <!-- <button type="submit" class="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600">Sign up</button>
               </div>
-            </form>
-            <!-- End Form -->
-          </div>
-        </div>
+            </form> -->
+        <!-- End Form -->
+        <!-- </div>
+        </div> -->
     </div>
-  </div>
+</div>

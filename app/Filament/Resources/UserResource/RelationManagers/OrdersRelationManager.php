@@ -24,6 +24,13 @@ class OrdersRelationManager extends RelationManager
                 //
             ]);
     }
+    // public static function shouldRegisterNavigation(): bool
+    // {
+    //     if(auth()->user()->can('rute'))
+    //         return true;
+    //     else
+    //         return false;
+    // }
 
     public function table(Table $table): Table
     {
@@ -34,7 +41,7 @@ class OrdersRelationManager extends RelationManager
                     ->label('Order ID')
                     ->searchable(),
 
-                TextColumn::make('grand_total')
+                TextColumn::make('items.harga_total')
                     ->formatStateUsing(function ($state) {
                         return Str::replace('IDR', 'Rp', format_money($state, 'IDR'));
                     })
@@ -47,13 +54,18 @@ class OrdersRelationManager extends RelationManager
                         'paid'      =>  'success',
                         'unpaid'    =>  'warning',
                     })
+                    // ->label(fn (string $state): string => match ($state) {
+                    //     'pending'   =>  'Ditunggu',
+                    //     'paid'      =>  'Dibayar',
+                    //     'unpaid'    =>  'Belum Dibayar',
+                    // })
                     ->sortable()
                     ->searchable(),
 
-                TextColumn::make('payment_status')
-                    ->sortable()
-                    ->badge()
-                    ->searchable(),
+                // TextColumn::make('payment_status')
+                //     ->sortable()
+                //     ->badge()
+                //     ->searchable(),
 
                 TextColumn::make('created_at')
                     ->label('Order Date')
@@ -67,10 +79,10 @@ class OrdersRelationManager extends RelationManager
                 // Tables\Actions\CreateAction::make(),
             ])
             ->actions([
-                // Tables\Actions\Action::make('View Order')
-                // ->url(fn(Order $record): string => OrderResource::getUrl('view', ['record' => $record]))
-                // ->color('info')
-                // ->icon('heroicon-o-eye'),
+                Tables\Actions\Action::make('View Order')
+                ->url(fn(Order $record): string => OrderResource::getUrl('view', ['record' => $record]))
+                ->color('info')
+                ->icon('heroicon-o-eye'),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
